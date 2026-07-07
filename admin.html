@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة إدارة المنتجات</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #6b0b6e; color: #333; }
+        header { background-color: #b60d7e; color: #fff; padding: 20px; text-align: center; }
+        .panel-container { max-width: 750px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        h2 { color: #b60d7e; margin: 10px 0; text-align: right; }
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; text-align: right; }
+        .form-group label { margin-bottom: 5px; font-weight: bold; color: #333; }
+        .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+        .btn-submit { background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1.1rem; font-weight: bold; width: 100%; }
+        .btn-submit:hover { background-color: #0069d9; }
+        
+        .prod-table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: right; }
+        .prod-table th, .prod-table td { border-bottom: 1px solid #ddd; padding: 10px; }
+        .prod-table th { background-color: #f2f2f2; color: #333; }
+        .btn-danger { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-danger:hover { background-color: #bd2130; }
+        .prod-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚙️ لوحة تحكم إدارة المنتجات</h1>
+    </header>
+
+    <div class="panel-container">
+        <h2>➕ إضافة منتج جديد للمتجر</h2>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <form id="add-product-form" onsubmit="createNewProduct(event)">
+            <div class="form-group">
+                <label for="prod-name">اسم المنتج:</label>
+                <input type="text" id="prod-name" placeholder="مثال: تفاح أحمر" required>
+            </div>
+            <div class="form-group">
+                <label for="prod-price">السعر (باليورو):</label>
+                <input type="number" id="prod-price" step="0.01" placeholder="مثال: 2.50" required>
+            </div>
+            <div class="form-group">
+                <label for="prod-img">رابط صورة المنتج:</label>
+                <input type="url" id="prod-img" placeholder="https://example.com/image.jpg" required>
+            </div>
+            <button type="submit" class="btn-submit">حفظ وإضافة المنتج للمتجر 🚀</button>
+        </form>
+
+        <h2 style="margin-top: 40px;">📦 المنتجات الحالية المتوفرة في المتجر</h2>
+        <table class="prod-table">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>السعر</th>
+                    <th>إجراء</th>
+                </tr>
+            </thead>
+            <tbody id="admin-products-list"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const defaultProducts = [
+            { id: 1, name: "بندورة طازجة", price: 2.00, img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg" },
+            { id: 2, name: "خيار بلدي", price: 1.50, img: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cucumbers_with_fleurs.jpg" },
+            { id: 3, name: "جزر طازج", price: 1.75, img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Carrots_at_Ljubljana_Central_Market.jpg/640px-Carrots_at_Ljubljana_Central_Market.jpg" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('store_products')) || defaultProducts;
+
+        function renderAdminProducts() {
+            const tbody = document.getElementById('admin-products-list');
+            tbody.innerHTML = '';
+            
+            products.forEach(prod => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <img src="${prod.img}" class="prod-thumb">
+                        ${prod.name}
+                    </td>
+                    <td>${prod.price.toFixed(2)} يورو</td>
+                    <td><button class="btn-danger" onclick="deleteProduct(${prod.id})">حذف 🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.createNewProduct = function(event) {
+            event.preventDefault();
+            const name = document.getElementById('prod-name').value;
+            const price = parseFloat(document.getElementById('prod-price').value);
+            const img = document.getElementById('prod-img').value;
+            
+            const newProduct = { id: Date.now(), name, price, img };
+            
+            products.push(newProduct);
+            localStorage.setItem('store_products', JSON.stringify(products));
+            
+            document.getElementById('add-product-form').reset();
+            alert('تم إضافة المنتج بنجاح وتوفيره بالمتجر الرئيسي! 🎉');
+            renderAdminProducts();
+        }
+
+        window.deleteProduct = function(prodId) {
+            if (confirm('هل أنت متأكد من حذف هذا المنتج نهائياً؟')) {
+                products = products.filter(p => p.id !== prodId);
+                localStorage.setItem('store_products', JSON.stringify(products));
+                renderAdminProducts();
+            }
+        }
+
+        renderAdminProducts();
+    </script>
+</body>
+</html>
