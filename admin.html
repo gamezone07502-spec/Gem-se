@@ -3,43 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة إدارة المنتجات</title>
+    <title>لوحة الإدارة - الأقسام المحدثة</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #6b0b6e; color: #333; }
-        header { background-color: #b60d7e; color: #fff; padding: 20px; text-align: center; }
-        .panel-container { max-width: 750px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #6b0b6e; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        header { background-color: #b60d7e; color: #fff; padding: 20px; text-align: center; width: 100%; box-sizing: border-box; display: none; }
+        
+        .login-container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: right; box-sizing: border-box; }
+        .login-container h2 { color: #b60d7e; margin-bottom: 20px; text-align: center; }
+        .error-msg { color: #dc3545; font-weight: bold; margin-bottom: 15px; text-align: center; display: none; }
+        
+        .panel-container { max-width: 750px; margin: 30px auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 90%; display: none; box-sizing: border-box; }
         h2 { color: #b60d7e; margin: 10px 0; text-align: right; }
         .form-group { margin-bottom: 15px; display: flex; flex-direction: column; text-align: right; }
         .form-group label { margin-bottom: 5px; font-weight: bold; color: #333; }
-        .form-group input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; font-family: Arial, sans-serif; }
+        
         .btn-submit { background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 1.1rem; font-weight: bold; width: 100%; }
         .btn-submit:hover { background-color: #0069d9; }
         
         .prod-table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: right; }
         .prod-table th, .prod-table td { border-bottom: 1px solid #ddd; padding: 10px; }
         .prod-table th { background-color: #f2f2f2; color: #333; }
+        
         .btn-danger { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
         .btn-danger:hover { background-color: #bd2130; }
+        
+        /* أزرار التنقل الإضافية */
+        .btn-logout { background-color: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; float: left; font-size: 0.9rem; margin-right: 5px; }
+        .btn-view-store { background-color: #fd7e14; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; float: left; font-size: 0.9rem; text-decoration: none; font-weight: bold; }
+        .btn-view-store:hover { background-color: #e96b02; }
+        
         .prod-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-left: 10px; }
+        .badge { background-color: #e0e0e0; padding: 3px 8px; border-radius: 12px; font-size: 0.85rem; color: #555; }
+        .back-to-shop-login { display: block; text-align: center; margin-top: 15px; color: #fd7e14; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>⚙️ لوحة تحكم إدارة المنتجات</h1>
+    <div class="login-container" id="login-box">
+        <h2>🔒 تسجيل دخول الإدارة</h2>
+        <div class="error-msg" id="error-notification">اسم المستخدم أو كلمة المرور غير صحيحة!</div>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">اسم المستخدم:</label>
+                <input type="text" id="username" placeholder="admin" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" placeholder="123456" required>
+            </div>
+            <button type="submit" class="btn-submit">تسجيل الدخول 🔑</button>
+        </form>
+        <a href="index.html" class="back-to-shop-login">🏪 العودة وتصفح المتجر</a>
+    </div>
+
+    <header id="main-header">
+        <h1>⚙️ لوحة تحكم إدارة الأقسام
+            <button class="btn-logout" onclick="handleLogout()">تسجيل الخروج 🚪</button>
+            <a href="index.html" class="btn-view-store">🏪 عرض المتجر</a>
+        </h1>
     </header>
 
-    <div class="panel-container">
-        <h2>➕ إضافة منتج جديد للمتجر</h2>
+    <div class="panel-container" id="admin-panel">
+        <h2>➕ إضافة منتج جديد وتحديد قسمه</h2>
         <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
         <form id="add-product-form" onsubmit="createNewProduct(event)">
             <div class="form-group">
                 <label for="prod-name">اسم المنتج:</label>
-                <input type="text" id="prod-name" placeholder="مثال: تفاح أحمر" required>
+                <input type="text" id="prod-name" placeholder="مثال: علبة سجائر مارلبورو" required>
+            </div>
+            <div class="form-group">
+                <label for="prod-category">قسم المنتج:</label>
+                <select id="prod-category" required>
+                    <option value="vegetables">قسم الخضروات 🥦</option>
+                    <option value="fruits">قسم الفواكه 🍎</option>
+                    <option value="smoking">قسم الدخان 🚬</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="prod-price">السعر (باليورو):</label>
-                <input type="number" id="prod-price" step="0.01" placeholder="مثال: 2.50" required>
+                <input type="number" id="prod-price" step="0.01" placeholder="مثال: 7.50" required>
             </div>
             <div class="form-group">
                 <label for="prod-img">رابط صورة المنتج:</label>
@@ -53,6 +96,7 @@
             <thead>
                 <tr>
                     <th>المنتج</th>
+                    <th>القسم</th>
                     <th>السعر</th>
                     <th>إجراء</th>
                 </tr>
@@ -62,25 +106,68 @@
     </div>
 
     <script>
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "123456";
+
+        window.onload = function() {
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                showAdminPanel();
+            }
+        };
+
+        window.handleLogin = function(event) {
+            event.preventDefault();
+            const userInput = document.getElementById('username').value;
+            const passInput = document.getElementById('password').value;
+            const errorNotification = document.getElementById('error-notification');
+
+            if (userInput === ADMIN_USER && passInput === ADMIN_PASS) {
+                sessionStorage.setItem('isLoggedIn', 'true');
+                errorNotification.style.display = 'none';
+                showAdminPanel();
+            } else {
+                errorNotification.style.display = 'block';
+            }
+        };
+
+        function showAdminPanel() {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('main-header').style.display = 'block';
+            document.getElementById('admin-panel').style.display = 'block';
+            document.body.style.justifyContent = 'flex-start';
+            renderAdminProducts();
+        }
+
+        window.handleLogout = function() {
+            sessionStorage.removeItem('isLoggedIn');
+            location.reload();
+        };
+
         const defaultProducts = [
-            { id: 1, name: "بندورة طازجة", price: 2.00, img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg" },
-            { id: 2, name: "خيار بلدي", price: 1.50, img: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cucumbers_with_fleurs.jpg" },
-            { id: 3, name: "جزر طازج", price: 1.75, img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Carrots_at_Ljubljana_Central_Market.jpg/640px-Carrots_at_Ljubljana_Central_Market.jpg" }
+            { id: 1, name: "بندورة طازجة", category: "vegetables", price: 2.00, img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg" },
+            { id: 2, name: "خيار بلدي", category: "vegetables", price: 1.50, img: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cucumbers_with_fleurs.jpg" },
+            { id: 3, name: "تفاح أحمر", category: "fruits", price: 2.50, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=500" }
         ];
 
         let products = JSON.parse(localStorage.getItem('store_products')) || defaultProducts;
 
         function renderAdminProducts() {
             const tbody = document.getElementById('admin-products-list');
+            if(!tbody) return;
             tbody.innerHTML = '';
             
             products.forEach(prod => {
+                let categoryText = '🥦 خضروات';
+                if (prod.category === 'fruits') categoryText = '🍎 فواكه';
+                if (prod.category === 'smoking') categoryText = '🚬 دخان';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
                         <img src="${prod.img}" class="prod-thumb">
                         ${prod.name}
                     </td>
+                    <td><span class="badge">${categoryText}</span></td>
                     <td>${prod.price.toFixed(2)} يورو</td>
                     <td><button class="btn-danger" onclick="deleteProduct(${prod.id})">حذف 🗑️</button></td>
                 `;
@@ -91,16 +178,17 @@
         window.createNewProduct = function(event) {
             event.preventDefault();
             const name = document.getElementById('prod-name').value;
+            const category = document.getElementById('prod-category').value;
             const price = parseFloat(document.getElementById('prod-price').value);
             const img = document.getElementById('prod-img').value;
             
-            const newProduct = { id: Date.now(), name, price, img };
+            const newProduct = { id: Date.now(), name, category, price, img };
             
             products.push(newProduct);
             localStorage.setItem('store_products', JSON.stringify(products));
             
             document.getElementById('add-product-form').reset();
-            alert('تم إضافة المنتج بنجاح وتوفيره بالمتجر الرئيسي! 🎉');
+            alert('تم إضافة المنتج وتصنيفه بنجاح! 🎉');
             renderAdminProducts();
         }
 
@@ -111,8 +199,6 @@
                 renderAdminProducts();
             }
         }
-
-        renderAdminProducts();
     </script>
 </body>
 </html>

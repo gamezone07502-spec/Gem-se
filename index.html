@@ -3,23 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر الخضروات وسلة المشتريات</title>
+    <title>متجر الخضروات والفواكه والدخان</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #6b0b6e; color: #333; }
         header { background-color: #b60d7e; color: #fff; padding: 20px; text-align: center; }
         
-        nav { background-color: #9c1474; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 1000; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        nav button { 
-            background: none; border: none; color: rgb(236, 129, 6); font-size: 1rem; font-weight: bold; cursor: pointer; padding: 8px 12px; transition: 0.3s;
+        nav { background-color: #9c1474; padding: 10px; text-align: center; position: sticky; top: 0; z-index: 1000; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: center; }
+        nav button, nav a { 
+            background: none; border: none; color: rgb(236, 129, 6); font-size: 1rem; font-weight: bold; cursor: pointer; padding: 8px 12px; transition: 0.3s; text-decoration: none;
         }
         nav button.active { color: #fffb00; border-bottom: 2px solid #fffb00; }
+        nav a.admin-link { color: #00fff0; border: 1px solid #00fff0; border-radius: 5px; margin-right: 15px; }
+        nav a.admin-link:hover { background-color: #00fff0; color: #6b0b6e; }
         
+        .category-filter-bar { text-align: center; margin: 20px 0 10px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+        .filter-btn { background-color: #9c1474; color: white; border: 2px solid #fff; padding: 8px 20px; font-size: 1rem; font-weight: bold; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        .filter-btn:hover, .filter-btn.active { background-color: #fffb00; color: #6b0b6e; border-color: #fffb00; }
+
         .page-section { display: none; animation: fadeInPage 0.4s ease-in-out forwards; }
         .page-section.active { display: block; }
 
         @keyframes fadeInPage { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        .container { max-width: 1200px; margin: 20px auto; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
         .product-card { background-color: #9e1393; border: 1px solid #ffffff; border-radius: 8px; width: 250px; padding: 15px; text-align: center; box-shadow: 0 2px 5px rgba(255, 0, 191, 0.4); }
         .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; }
         .product-card h3 { margin: 10px 0; color: #ffffff; }
@@ -38,7 +44,6 @@
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
         .total-price { font-size: 1.4em; font-weight: bold; margin-top: 20px; text-align: left; color: #b60d7e; }
 
-        /* أزرار وعناصر التحكم بالكمية */
         .qty-btn { background-color: #b60d7e; color: white; border: none; width: 28px; height: 28px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .qty-btn:hover { background-color: #9c1474; }
         .qty-val { font-weight: bold; margin: 0 8px; display: inline-block; min-width: 20px; text-align: center; }
@@ -56,7 +61,7 @@
 
         @media print {
             body { background-color: #fff; color: #000; }
-            header, nav, #products-shop-grid, .panel-header, .cart-item, .btn-success, #clearAllBtn, .btn-print, .total-price { display: none !important; }
+            header, nav, .category-filter-bar, #products-shop-grid, .panel-header, .cart-item, .btn-success, #clearAllBtn, .btn-print, .total-price { display: none !important; }
             .panel-container { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
             .invoice-box { display: block !important; border: none; background: #fff; padding: 0; }
         }
@@ -65,15 +70,22 @@
 <body>
 
     <header>
-        <h1>متجر الخضروات والفواكه الطازجة</h1>
+        <h1>متجر الخضروات والفواكه والدخان</h1>
     </header>
 
     <nav>
         <button id="nav-store" class="active" onclick="switchPage('store-page')">🏪 المتجر الرئيسي</button>
         <button id="nav-cart" onclick="switchPage('cart-page')">🛒 السلة (<span id="cart-count">0</span>)</button>
+        <a href="admin.html" class="admin-link">⚙️ لوحة الإدارة</a>
     </nav>
 
     <div id="store-page" class="page-section active">
+        <div class="category-filter-bar">
+            <button class="filter-btn active" id="btn-all" onclick="filterProducts('all')">الكل 🛒</button>
+            <button class="filter-btn" id="btn-veg" onclick="filterProducts('vegetables')">قسم الخضار 🥦</button>
+            <button class="filter-btn" id="btn-fruit" onclick="filterProducts('fruits')">قسم الفواكه 🍎</button>
+            <button class="filter-btn" id="btn-smoke" onclick="filterProducts('smoking')">قسم الدخان 🚬</button>
+        </div>
         <main class="container" id="products-shop-grid"></main>
     </div>
 
@@ -116,13 +128,14 @@
 
     <script>
         const defaultProducts = [
-            { id: 1, name: "بندورة طازجة", price: 2.00, img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg" },
-            { id: 2, name: "خيار بلدي", price: 1.50, img: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cucumbers_with_fleurs.jpg" },
-            { id: 3, name: "جزر طازج", price: 1.75, img: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Carrots_at_Ljubljana_Central_Market.jpg/640px-Carrots_at_Ljubljana_Central_Market.jpg" }
+            { id: 1, name: "بندورة طازجة", category: "vegetables", price: 2.00, img: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg" },
+            { id: 2, name: "خيار بلدي", category: "vegetables", price: 1.50, img: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cucumbers_with_fleurs.jpg" },
+            { id: 3, name: "تفاح أحمر", category: "fruits", price: 2.50, img: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=500" }
         ];
 
         let products = JSON.parse(localStorage.getItem('store_products')) || defaultProducts;
         let cart = JSON.parse(localStorage.getItem('shop_cart')) || [];
+        let currentFilter = 'all';
 
         function switchPage(pageId) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
@@ -144,11 +157,30 @@
             document.getElementById('items-count').textContent = totalQty;
         }
 
+        window.filterProducts = function(category) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            if(category === 'all') document.getElementById('btn-all').classList.add('active');
+            if(category === 'vegetables') document.getElementById('btn-veg').classList.add('active');
+            if(category === 'fruits') document.getElementById('btn-fruit').classList.add('active');
+            if(category === 'smoking') document.getElementById('btn-smoke').classList.add('active');
+            
+            renderStoreProducts();
+        }
+
         function renderStoreProducts() {
             const grid = document.getElementById('products-shop-grid');
             grid.innerHTML = '';
             
-            products.forEach(prod => {
+            const filtered = products.filter(p => currentFilter === 'all' || p.category === currentFilter);
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<p style="color:#fff; text-align:center; width:100%; font-size:1.2rem; padding:40px;">لا توجد منتجات متوفرة في هذا القسم حالياً.</p>';
+                return;
+            }
+
+            filtered.forEach(prod => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
@@ -181,11 +213,9 @@
 
         window.updateQuantity = function(index, change) {
             cart[index].quantity += change;
-            
             if (cart[index].quantity <= 0) {
                 cart.splice(index, 1);
             }
-            
             localStorage.setItem('shop_cart', JSON.stringify(cart));
             document.getElementById('invoice-section').style.display = 'none';
             renderCart();
