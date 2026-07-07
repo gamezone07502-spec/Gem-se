@@ -46,11 +46,11 @@
         <form onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="username">اسم المستخدم:</label>
-                <input type="text" id="username" placeholder="admin" required>
+                <input type="text" id="username" placeholder="" required>
             </div>
             <div class="form-group">
                 <label for="password">كلمة المرور:</label>
-                <input type="password" id="password" placeholder="123456" required>
+                <input type="password" id="password" placeholder="" required>
             </div>
             <button type="submit" class="btn-submit">تسجيل الدخول 🔑</button>
         </form>
@@ -107,7 +107,7 @@
 
     <script>
         const ADMIN_USER = "admin";
-        const ADMIN_PASS = "123456";
+        const ADMIN_PASS = "07502023117asasa";
 
         window.onload = function() {
             if (sessionStorage.getItem('isLoggedIn') === 'true') {
